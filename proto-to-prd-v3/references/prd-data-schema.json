@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PRD结构化数据Schema",
+  "description": "proto-to-prd 生成的 prd-data.json 必须符合此结构",
+  "type": "object",
+  "required": ["meta", "pages"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["project", "version", "scanTime"],
+      "properties": {
+        "project": { "type": "string", "description": "项目名称" },
+        "version": { "type": "string", "description": "文档版本" },
+        "scanTime": { "type": "string", "description": "扫描时间 ISO8601" },
+        "vueVersion": { "type": "string", "enum": ["vue2", "vue3"], "description": "检测到的Vue版本" },
+        "uiLibrary": { "type": "array", "items": { "type": "string" }, "description": "检测到的UI库" },
+        "parseDepth": { "type": "string", "enum": ["L1L2L3", "L1L2L3L4"], "description": "解析深度" }
+      }
+    },
+    "background": {
+      "type": "object",
+      "description": "文档背景",
+      "properties": {
+        "projectBackground": { "type": "string" },
+        "documentPurpose": { "type": "string" },
+        "scope": { "type": "string" }
+      }
+    },
+    "targetUsers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "permissionScope": { "type": "string" }
+        }
+      }
+    },
+    "coreFlows": {
+      "type": "array",
+      "description": "核心业务流程",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "steps"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["actor", "action", "response"],
+              "properties": {
+                "actor": { "type": "string" },
+                "action": { "type": "string" },
+                "response": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "description": "页面列表及其功能点",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "route", "sourceFile", "functions"],
+        "properties": {
+          "id": { "type": "string", "description": "页面唯一标识" },
+          "name": { "type": "string", "description": "页面名称" },
+          "route": { "type": "string", "description": "路由路径" },
+          "sourceFile": { "type": "string", "description": "关联代码文件路径" },
+          "parentPage": { "type": "string", "description": "父页面ID" },
+          "children": { "type": "array", "items": { "type": "string" }, "description": "子页面ID列表" },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "description", "confidence"],
+              "properties": {
+                "id": { "type": "string", "description": "功能点ID，如F-001" },
+                "name": { "type": "string", "description": "功能点名称" },
+                "description": { "type": "string", "description": "功能概述" },
+                "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "置信度" },
+                "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"], "description": "优先级" },
+                "productDecisions": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "隐含的产品决策"
+                },
+                "flows": {
+                  "type": "object",
+                  "properties": {
+                    "main": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "actor": { "type": "string" },
+                          "action": { "type": "string" },
+                          "response": { "type": "string" }
+                        }
+                      }
+                    },
+                    "alternative": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "condition": { "type": "string" },
+                          "steps": { "type": "array", "items": { "type": "string" } }
+                        }
+                      }
+                    },
+                    "exception": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "condition": { "type": "string" },
+                          "handling": { "type": "string" },
+                          "recovery": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "type": { "type": "string", "enum": ["business", "validation", "permission"] },
+                      "description": { "type": "string" },
+                      "codeReference": { "type": "string" }
+                    }
+                  }
+                },
+                "relatedFunctions": {
+                  "type": "array",
+                  "description": "关联功能点（前置/后置依赖）",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "name", "relation"],
+                    "properties": {
+                      "id": { "type": "string", "description": "关联功能点ID" },
+                      "name": { "type": "string", "description": "关联功能点名称" },
+                      "relation": { "type": "string", "enum": ["before", "after"], "description": "before=前置依赖, after=后续影响" },
+                      "note": { "type": "string", "description": "关联说明" }
+                    }
+                  }
+                },
+                "fields": {
+                  "type": "array",
+                  "description": "字段说明（按字段类型覆盖完整规则维度）",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "label", "type"],
+                    "properties": {
+                      "name": { "type": "string", "description": "字段名（代码中变量名）" },
+                      "label": { "type": "string", "description": "中文名/显示标签" },
+                      "type": { "type": "string", "description": "数据类型，如 String / Number / Date / Boolean" },
+                      "uiType": { "type": "string", "description": "控件类型：输入框/下拉选择框/文本域/日期选择器/数字输入框/开关/复选框/上传" },
+                      "required": { "type": "boolean", "description": "是否必填" },
+                      "editable": { "type": "boolean", "description": "是否可编辑" },
+                      "editCondition": { "type": "string", "description": "可编辑条件，如'新建时不可编辑，编辑时可改'" },
+                      "unique": { "type": "boolean", "description": "数据唯一性" },
+                      "uniqueScope": { "type": "string", "description": "唯一性范围，如'全表唯一''赛道内唯一'" },
+                      "maxLength": { "type": "string", "description": "长度限制，如'最大50字符''2-20字符'" },
+                      "format": { "type": "string", "description": "输入格式，如'只允许数字和小数点''手机号正则'" },
+                      "defaultValue": { "description": "默认值" },
+                      "placeholder": { "type": "string", "description": "占位提示文本" },
+                      "options": { "type": "array", "items": { "type": "string" }, "description": "下拉选项列表" },
+                      "multiple": { "type": "boolean", "description": "是否多选" },
+                      "resizable": { "type": "boolean", "description": "文本域是否支持拉宽" },
+                      "min": { "type": "number", "description": "数字输入框最小值" },
+                      "max": { "type": "number", "description": "数字输入框最大值" },
+                      "step": { "type": "number", "description": "数字输入框步长" },
+                      "decimalPlaces": { "type": "number", "description": "小数位数" },
+                      "validation": { "type": "string", "description": "校验规则描述" },
+                      "validationTrigger": { "type": "string", "description": "校验触点，如'blur''submit'" },
+                      "validationMsg": { "type": "string", "description": "验证提示语" },
+                      "autoFill": { "type": "string", "description": "非输入字段的自动取值逻辑" },
+                      "hidden": { "type": "string", "description": "是否隐藏字段及取值逻辑" },
+                      "source": { "type": "string", "description": "数据来源：用户输入 / API返回 / 系统自动生成" },
+                      "relatedFields": { "type": "array", "items": { "type": "string" }, "description": "关联字段引用，如'F-031.settledPoints'" }
+                    }
+                  }
+                },
+                "dataRequirements": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entity": { "type": "string" },
+                      "fields": { "type": "array", "items": { "type": "string" } },
+                      "stateFlow": { "type": "string" },
+                      "storageRequirement": { "type": "string" }
+                    }
+                  }
+                },
+                "codeTraces": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file": { "type": "string" },
+                      "lines": { "type": "string" },
+                      "type": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "apis": {
+      "type": "array",
+      "description": "接口需求",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "method", "url"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "method": { "type": "string", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"] },
+          "url": { "type": "string" },
+          "callSite": { "type": "string", "description": "调用位置" },
+          "requestBody": { "type": "object" },
+          "responseBody": { "type": "object" },
+          "dependencies": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "routeMappings": {
+      "type": "object",
+      "description": "路由到页面ID的映射，供交互视图组件路由联动使用",
+      "properties": {
+        "routeToPageId": {
+          "type": "object",
+          "description": "精确路由到页面ID的映射，如 {\"/dashboard\": \"P-001\"}",
+          "additionalProperties": { "type": "string" }
+        },
+        "hiddenRoutePrefixMap": {
+          "type": "array",
+          "description": "隐藏路由（带参数详情页）的前缀匹配映射",
+          "items": {
+            "type": "object",
+            "required": ["prefix", "pageId"],
+            "properties": {
+              "prefix": { "type": "string", "description": "路由前缀，如 /practice-scenes/" },
+              "pageId": { "type": "string", "description": "对应的页面ID" }
+            }
+          }
+        },
+        "menuTree": {
+          "type": "array",
+          "description": "菜单树结构（与原型侧边栏一级分组对齐）",
+          "items": {
+            "type": "object",
+            "required": ["label", "icon", "pageIds"],
+            "properties": {
+              "label": { "type": "string", "description": "分组名称" },
+              "icon": { "type": "string", "description": "图标" },
+              "pageIds": { "type": "array", "items": { "type": "string" }, "description": "该分组下的页面ID列表" },
+              "childMappings": {
+                "type": "object",
+                "description": "父页面下包含的隐藏子页面映射，如 {\"P-008\": [\"P-009\"]}",
+                "additionalProperties": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securityRequirements": {
+      "type": "object",
+      "description": "安全需求",
+      "properties": {
+        "accessControl": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": { "type": "string" },
+              "role": { "type": "string" },
+              "permission": { "type": "string" },
+              "codeReference": { "type": "string" }
+            }
+          }
+        },
+        "dataMasking": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dataField": { "type": "string" },
+              "rule": { "type": "string" },
+              "scenario": { "type": "string" }
+            }
+          }
+        },
+        "inputProtection": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "inputPoint": { "type": "string" },
+              "protectionType": { "type": "string" },
+              "rule": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
